@@ -37,6 +37,9 @@ ALLOWED_HOSTS = ['127.0.0.1','localhost','chopwell.herokuapp.com']
 GEOS_LIBRARY_PATH= 'C:\\OSGeo4W\\bin\\geos_c.dll'
 GDAL_DATA='C:\\OSGeo4W\\share\\gdal'  '''
 
+GEOS_LIBRARY_PATH = os.environ.get('GEOS_LIBRARY_PATH')
+GDAL_LIBRARY_PATH = os.environ.get('GDAL_LIBRARY_PATH')
+
 
 
 
