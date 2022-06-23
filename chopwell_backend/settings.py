@@ -131,15 +131,16 @@ WSGI_APPLICATION = 'chopwell_backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'postgres',
-        'USER':'postgres',
+        'NAME': os.environ.get('DATABASE_NAME'),
+        'USER':os.environ.get('DATABASE_USER'),
         'PASSWORD':os.environ.get('DATABASE_PASSWORD'),
-        'HOST':'127.0.0.1',
-        'PORT':'5432',
+        'HOST':os.environ.get('DATABASE_HOST'),
+        'PORT':os.environ.get('DATABASE_PORT'),
     }
 } 
 
-DATABASES['default'] = dj_database_url.config()
+db_from_env = dj_database_url.config(conn_max_age=500)
+DATABASES['default'].update(db_from_env)
 DATABASES['default']['ENGINE'] = 'django.contrib.gis.db.backends.postgis'
 
 SWAGGER_SETTINGS = {
