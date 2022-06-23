@@ -30,7 +30,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = str(os.environ.get('DEBUG'))=="1"
 
-ALLOWED_HOSTS = ['127.0.0.1','localhost']
+ALLOWED_HOSTS = ['127.0.0.1','localhost','chopwell.herokuapp.com']
 
 '''GDAL_LIBRARY_PATH= 'C:\\OSGeo4W\\bin\\gdal304.dll'
 GEOS_LIBRARY_PATH= 'C:\\OSGeo4W\\bin\\geos_c.dll'
