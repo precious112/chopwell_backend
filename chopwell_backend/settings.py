@@ -222,11 +222,7 @@ EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 
 
 #EMAIL_PORT = 465
-EMAIL_PORT =465
 
-EMAIL_USE_SSL = True
-
-EMAIL_USE_TLS = False
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
@@ -237,3 +233,10 @@ django_heroku.settings(config=locals())
 db_from_env = dj_database_url.config(conn_max_age=500)
 DATABASES['default'].update(db_from_env)
 DATABASES['default']['ENGINE'] = 'django.contrib.gis.db.backends.postgis'
+
+
+EMAIL_PORT =465
+
+EMAIL_USE_SSL = True
+
+EMAIL_USE_TLS = False
