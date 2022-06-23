@@ -32,9 +32,9 @@ DEBUG = str(os.environ.get('DEBUG'))=="1"
 
 ALLOWED_HOSTS = ['127.0.0.1','localhost']
 
-GDAL_LIBRARY_PATH= 'C:\\OSGeo4W\\bin\\gdal304.dll'
+'''GDAL_LIBRARY_PATH= 'C:\\OSGeo4W\\bin\\gdal304.dll'
 GEOS_LIBRARY_PATH= 'C:\\OSGeo4W\\bin\\geos_c.dll'
-GDAL_DATA='C:\\OSGeo4W\\share\\gdal'
+GDAL_DATA='C:\\OSGeo4W\\share\\gdal' '''
 
 
 
