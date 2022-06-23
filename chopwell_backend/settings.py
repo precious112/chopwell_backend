@@ -16,6 +16,7 @@ import django_heroku
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -35,6 +36,7 @@ ALLOWED_HOSTS = ['127.0.0.1','localhost','chopwell.herokuapp.com']
 '''GDAL_LIBRARY_PATH= 'C:\\OSGeo4W\\bin\\gdal304.dll'
 GEOS_LIBRARY_PATH= 'C:\\OSGeo4W\\bin\\geos_c.dll'
 GDAL_DATA='C:\\OSGeo4W\\share\\gdal' '''
+
 
 
 
@@ -135,7 +137,10 @@ DATABASES = {
         'HOST':'127.0.0.1',
         'PORT':'5432',
     }
-}
+} 
+
+DATABASES['default'] = dj_database_url.config()
+DATABASES['default']['ENGINE'] = 'django.contrib.gis.db.backends.postgis'
 
 SWAGGER_SETTINGS = {
     'SECURITY_DEFINITIONS': {
