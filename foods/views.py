@@ -4,7 +4,7 @@ from .serializers import FoodSerializer,TransactionSerializer,ConfirmSerializer
 from rest_framework.decorators import api_view,permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework import generics, permissions,status
-from .models import Food,Transaction
+from .models import Food,Transaction,Orders
 from users.models import Profile
 from users.serializers import ProfileSerializer
 from rest_framework import viewsets, filters
@@ -67,7 +67,7 @@ class DeleteFood(generics.DestroyAPIView):
     
 @api_view(['POST'])
 @transaction.atomic
-def pay_vendor(request,username1,username2,id):
+def pay_vendor(request,username1,username2,id,orders):
     food=Food.objects.filter(id=id).select_for_update()[0]
     user1=User.objects.filter(username=username1).select_for_update()[0]
     user2=User.objects.filter(username=username2).select_for_update()[0]
@@ -88,7 +88,7 @@ def pay_vendor(request,username1,username2,id):
                 "amount":amount
                 }
     r=None
-    if food.available==True and food.count>0:
+    if food.available==True and food.count>orders:
         r = requests.post(url, headers=headers, data=json.dumps(body))
     else:
         return Response({"message":f'{food.name} is out of order'},status=status.HTTP_404_NOT_FOUND)
@@ -102,6 +102,7 @@ def pay_vendor(request,username1,username2,id):
         sender=user1,
         receiver=user2,
         amount=food.price,
+        num_of_orders=orders,
         food=food,
         status="pending"
                 )
@@ -137,11 +138,11 @@ def verify_payment(request,reference,transaction_id,username1,username2,id):
         transaction.save()
         profile1.debit+=food.price
         profile1.save()
-        if food.count>0: 
-            food.count-=1
+        if food.count>transaction.num_of_orders: 
+            food.count-=transaction.num_of_orders
         if food.count==0:
             food.available=False
-        food.orders.add(user1)
+        order=Orders.objects.create(food=food,orderer=user1)
         food.save()
         return Response({"message":"transaction verified successfully",
                          "response":resp.json()

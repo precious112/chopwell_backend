@@ -35,18 +35,12 @@ ALLOWED_HOSTS = ['127.0.0.1','localhost','chopwell.herokuapp.com']
 
 '''GDAL_LIBRARY_PATH= 'C:\\OSGeo4W\\bin\\gdal304.dll'
 GEOS_LIBRARY_PATH= 'C:\\OSGeo4W\\bin\\geos_c.dll'
-GDAL_DATA='C:\\OSGeo4W\\share\\gdal'  '''
+GDAL_DATA='C:\\OSGeo4W\\share\\gdal' '''
+
+
 
 GEOS_LIBRARY_PATH = os.environ.get('GEOS_LIBRARY_PATH')
-GDAL_LIBRARY_PATH = os.environ.get('GDAL_LIBRARY_PATH')
-
-
-
-
-
-
-
-
+GDAL_LIBRARY_PATH = os.environ.get('GDAL_LIBRARY_PATH') 
 
 
 
@@ -137,10 +131,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': os.environ.get('DATABASE_NAME'),
-        'USER':os.environ.get('DATABASE_USER'),
-        'PASSWORD':os.environ.get('DATABASE_PASSWORD'),
+        'USER': os.environ.get('DATABASE_USER'),
+        'PASSWORD': os.environ.get('DATABASE_PASSWORD'),
         'HOST':os.environ.get('DATABASE_HOST'),
-        'PORT':os.environ.get('DATABASE_PORT'),
+        'PORT': os.environ.get('DATABASE_PORT'),
     }
 } 
 

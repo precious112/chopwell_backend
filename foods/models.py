@@ -14,7 +14,6 @@ class Food(models.Model):
     count=models.IntegerField(default=0)
     price=models.DecimalField(max_digits=10, decimal_places=2,default=0.00)
     available=models.BooleanField(default=True)
-    orders=models.ManyToManyField(User,related_name='user_orders',blank=True)
     date=models.DateTimeField(default=timezone.now)
     
     def __str__(self): 
@@ -25,10 +24,11 @@ class Transaction(models.Model):
     reference=models.CharField(max_length=100,default='')
     reference_two=models.CharField(max_length=100,default='')
     transfer_code=models.CharField(max_length=100,blank="")
-    sender=models.OneToOneField(User, on_delete=models.CASCADE,related_name='sender')
-    receiver=models.OneToOneField(User, on_delete=models.CASCADE,related_name='receiver')
+    sender=models.ForeignKey(User, on_delete=models.CASCADE,related_name='sender')
+    receiver=models.ForeignKey(User, on_delete=models.CASCADE,related_name='receiver')
     date=models.DateTimeField(default=timezone.now)
     amount=models.DecimalField(max_digits=10, decimal_places=2,default=0.00)
+    num_of_orders=models.IntegerField(default=0,null=True,blank=True)
     food=models.ForeignKey(Food,null=True,on_delete=models.CASCADE)
     refund=models.BooleanField(default=False)
     status=models.CharField(max_length=20,default="pending")
@@ -37,3 +37,11 @@ class Transaction(models.Model):
     
     def __str__(self): 
         return f'{self.transaction_id}'
+    
+    
+class Orders(models.Model):
+    food=models.ForeignKey(Food, on_delete=models.CASCADE,related_name='ordered_food')
+    orderer=models.ForeignKey(User,on_delete=models.CASCADE,related_name='food_orderer')
+    
+    def __str__(self): 
+        return f'{self.food.name} order'
