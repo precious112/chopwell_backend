@@ -87,7 +87,11 @@ def pay_vendor(request,username1,username2,id):
                 "email":email,
                 "amount":amount
                 }
-    r = requests.post(url, headers=headers, data=json.dumps(body))
+    r=None
+    if food.available==True and food.amount>0:
+        r = requests.post(url, headers=headers, data=json.dumps(body))
+    else:
+        return Response({"message":f'{food.name} out of order'},status=status.HTTP_404_NOT_FOUND)
     response = r.json()
     
     if response['message']=="Authorization URL created":
