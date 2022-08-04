@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Food,Transaction,Orders
+from .models import Food,Transaction,Orders,FoodDetail
 from django.contrib.auth.models import User
 
 
@@ -8,32 +8,38 @@ class UserNameSerializer(serializers.ModelSerializer):
         model=User
         fields=('id','username')
         
+class FoodDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=FoodDetail
+        fields='__all__'
+        
 class OrderSerializer(serializers.ModelSerializer):
+    order=FoodDetailSerializer(many=True,read_only=True)
     class Meta:
         model=Orders
-        fields=('food','orderer')
+        fields=('orderer','total_orders','total_amount','paid','order')
     def to_representation(self,instance):
         rep = super().to_representation(instance)
         rep['orderer']=UserNameSerializer(instance.orderer).data
         return rep
 
 class FoodSerializer(serializers.ModelSerializer):
-    ordered_food=OrderSerializer(many=True,read_only=True)
+    
     class Meta:
         model=Food
-        fields=('profile','name','image','count','price','available','date','ordered_food')
+        fields=('profile','name','image','count','price','available','date')
         
 class TransactionSerializer(serializers.ModelSerializer):
     
     class Meta:
         model=Transaction
-        fields=('transaction_id','sender','receiver','date','amount','num_of_orders','food','reference','refund','failed','confirm')
+        fields=('transaction_id','sender','receiver','date','order','reference','refund','failed','confirm')
         
     def to_representation(self,instance):
         rep = super().to_representation(instance)
         rep['sender']=UserNameSerializer(instance.sender).data
         rep['receiver']=UserNameSerializer(instance.receiver).data
-        rep['food']=FoodSerializer(instance.food).data
+        rep['order']=OrderSerializer(instance.order).data
         return rep
     
 class ConfirmSerializer(serializers.Serializer):

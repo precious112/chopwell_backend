@@ -1,10 +1,10 @@
 from django.shortcuts import render
 from rest_framework.response import Response
-from .serializers import FoodSerializer,TransactionSerializer,ConfirmSerializer
+from .serializers import FoodSerializer,TransactionSerializer,ConfirmSerializer,OrderSerializer
 from rest_framework.decorators import api_view,permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework import generics, permissions,status
-from .models import Food,Transaction,Orders
+from .models import Food,Transaction,Orders,FoodDetail
 from users.models import Profile
 from users.serializers import ProfileSerializer
 from rest_framework import viewsets, filters
@@ -14,6 +14,7 @@ import random
 from django.conf import settings
 from django.db import transaction
 from django.db.models import F,Q
+from django.shortcuts import get_object_or_404
 
 # Create your views here.
 class CreateFood(generics.CreateAPIView):
@@ -64,15 +65,65 @@ class DeleteFood(generics.DestroyAPIView):
     queryset=Food.objects.all()
     serializer_class=FoodSerializer
     
+class OrderDetail(generics.RetrieveAPIView):
+    queryset=Orders.objects.all()
+    serializer_class=OrderSerializer
+
+'''
+normal convention: username1 is for the customer,username2 is for the vendor.
+
+ '''
+
+@api_view(['POST'])
+@transaction.atomic
+def add_to_orders(request,username1,username2,id,orders):
+    food=Food.objects.filter(id=id).select_for_update()[0] 
+    user1=User.objects.filter(username=username1).select_for_update()[0]
+    user2=User.objects.filter(username=username2).select_for_update()[0]
+    profile1=Profile.objects.filter(user=user1).select_for_update()[0]
+    profile2=Profile.objects.filter(user=user2).select_for_update()[0]
+    
+    if Orders.objects.filter(orderer=user1,vendor=user2,paid=False).exists():
+        pass
+    else:
+        Orders.objects.create(orderer=user1,vendor=user2)
+        
+    if food.available==True and food.count>=orders:
+        order=Orders.objects.filter(orderer=user1,vendor=user2,paid=False).select_for_update()[0]
+        ordered_food=FoodDetail.objects.create(
+            food=food,
+            num_of_orders=orders,
+            amount=orders*food.price,
+            order=order
+            )
+        
+        food.count -= orders
+        food.save()
+        if food.count<=0:
+            food.available=False
+            food.save()
+        order.total_orders+=orders
+        order.total_amount+=orders*food.price
+        order.save()
+        return Response({"food_ordered":FoodSerializer(food).data,
+                         "message":"food ordered successfully"
+                         },status=status.HTTP_200_OK)
+    
+    else:
+        return Response({"message":"sorry,out of order"},status=status.HTTP_400_BAD_REQUEST)
+            
+        
+        
     
 @api_view(['POST'])
 @transaction.atomic
-def pay_vendor(request,username1,username2,id,orders):
+def pay_vendor(request,username1,username2,id,order_id):
     food=Food.objects.filter(id=id).select_for_update()[0]
     user1=User.objects.filter(username=username1).select_for_update()[0]
     user2=User.objects.filter(username=username2).select_for_update()[0]
     profile1=Profile.objects.filter(user=user1).select_for_update()[0]
     profile2=Profile.objects.filter(user=user2).select_for_update()[0]
+    order=get_object_or_404(Orders,orderer=user1,vendor=user2,paid=False,id=order_id)
     
     url = 'https://api.paystack.co/transaction/initialize'
     headers = {
@@ -81,29 +132,26 @@ def pay_vendor(request,username1,username2,id,orders):
             'Accept': 'application/json',
             
             }
-    amount=int(food.price)
+    amount=int(order.total_amount)
     email=str(user1.email)
     body={
                 "email":email,
                 "amount":amount
                 }
     r=None
-    if food.available==True and food.count>orders:
-        r = requests.post(url, headers=headers, data=json.dumps(body))
-    else:
-        return Response({"message":f'{food.name} is out of order'},status=status.HTTP_404_NOT_FOUND)
+    r = requests.post(url, headers=headers, data=json.dumps(body))
     response = r.json()
     
     if response['message']=="Authorization URL created":
         t_id=random.randint(1000, 9999)
+        while Transaction.objects.filter(transaction_id=f'TransactionID{t_id}').exists():
+            t_id=random.randint(1000, 9999)
         transaction=Transaction.objects.create(
         transaction_id=f'TransactionID{t_id}',
         reference=response['data']['reference'],
         sender=user1,
         receiver=user2,
-        amount=food.price,
-        num_of_orders=orders,
-        food=food,
+        order=order,
         status="pending"
                 )
         serializer=TransactionSerializer(transaction)
@@ -115,9 +163,9 @@ def pay_vendor(request,username1,username2,id,orders):
 
 @api_view(['POST'])
 @transaction.atomic
-def verify_payment(request,reference,transaction_id,username1,username2,id):
+def verify_payment(request,reference,transaction_id,username1,username2,order_id):
 
-    food=Food.objects.filter(id=id).select_for_update()[0]
+    order=Orders.objects.filter(id=order_id).select_for_update()[0]
     user1=User.objects.filter(username=username1).select_for_update()[0]
     user2=User.objects.filter(username=username2).select_for_update()[0]
     profile1=Profile.objects.filter(user=user1).select_for_update()[0]
@@ -136,16 +184,16 @@ def verify_payment(request,reference,transaction_id,username1,username2,id):
     if resp.json()['data']['status'] == 'success':
         transaction.status='success'
         transaction.save()
-        profile1.debit+=food.price
+        profile1.debit+=order.total_amount
         profile1.save()
-        if food.count>transaction.num_of_orders: 
-            food.count-=transaction.num_of_orders
-        if food.count==0:
-            food.available=False
-        order=Orders.objects.create(food=food,orderer=user1)
-        food.save()
+        profile2.balance+=order.total_amount
+        profile2.save()
+        order.paid=True
+        order.save()
+        
         return Response({"message":"transaction verified successfully",
-                         "response":resp.json()
+                         "response":resp.json(),
+                         "transaction":TransactionSerializer(transaction).data
                          },status=status.HTTP_200_OK)
     else:
         transaction.status='failed'

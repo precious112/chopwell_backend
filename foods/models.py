@@ -19,6 +19,25 @@ class Food(models.Model):
     def __str__(self): 
         return f'{self.name}'
     
+
+    
+    
+class Orders(models.Model):
+    orderer=models.ForeignKey(User,on_delete=models.CASCADE,related_name='food_orderer')
+    vendor=models.ForeignKey(User,on_delete=models.CASCADE,null=True,related_name='order_vendor')
+    paid=models.BooleanField(default=False)
+    total_orders=models.IntegerField(default=0,null=True,blank=True)
+    total_amount=models.DecimalField(max_digits=10, decimal_places=2,default=0.00)
+    
+    def __str__(self): 
+        return f'{self.orderer.username} order'
+    
+class FoodDetail(models.Model):
+    food=models.ForeignKey(Food, on_delete=models.CASCADE,related_name='ordered_food')
+    num_of_orders=models.IntegerField(default=0,null=True,blank=True)
+    amount=models.DecimalField(max_digits=10, decimal_places=2,default=0.00)
+    order=models.ForeignKey(Orders,on_delete=models.CASCADE,related_name='order')
+    
 class Transaction(models.Model):
     transaction_id=models.CharField(max_length=17,unique=True)
     reference=models.CharField(max_length=100,default='')
@@ -26,10 +45,8 @@ class Transaction(models.Model):
     transfer_code=models.CharField(max_length=100,blank="")
     sender=models.ForeignKey(User, on_delete=models.CASCADE,related_name='sender')
     receiver=models.ForeignKey(User, on_delete=models.CASCADE,related_name='receiver')
+    order=models.OneToOneField(Orders, on_delete=models.CASCADE,null=True,related_name='transaction_order')
     date=models.DateTimeField(default=timezone.now)
-    amount=models.DecimalField(max_digits=10, decimal_places=2,default=0.00)
-    num_of_orders=models.IntegerField(default=0,null=True,blank=True)
-    food=models.ForeignKey(Food,null=True,on_delete=models.CASCADE)
     refund=models.BooleanField(default=False)
     status=models.CharField(max_length=20,default="pending")
     failed=models.BooleanField(default=False)
@@ -39,9 +56,3 @@ class Transaction(models.Model):
         return f'{self.transaction_id}'
     
     
-class Orders(models.Model):
-    food=models.ForeignKey(Food, on_delete=models.CASCADE,related_name='ordered_food')
-    orderer=models.ForeignKey(User,on_delete=models.CASCADE,related_name='food_orderer')
-    
-    def __str__(self): 
-        return f'{self.food.name} order'

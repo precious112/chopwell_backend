@@ -11,8 +11,9 @@ urlpatterns = [
     path('detail-food/<int:pk>/',p_views.DetailFood.as_view(),name='detail-food'),
     path('delete-food/<int:pk>/',p_views.DeleteFood.as_view(),name='delete-food'),
     path('update-food/<int:pk>/',p_views.CreateFood.as_view(),name='create-food'),
-    path('pay-vendor/<slug:username1>/<slug:username2>/<int:id>/<int:orders>/',p_views.pay_vendor,name='pay-vendor'),
-    path('verify-payment/<slug:reference>/<slug:transaction_id>/<slug:username1>/<slug:username2>/<int:id>/',p_views.verify_payment,name='verify-payment'),
+    path('add-to-orders/<slug:username1>/<slug:username2>/<int:id>/<int:orders>/',p_views.add_to_orders,name='add_to_orders'),
+    path('pay-vendor/<slug:username1>/<slug:username2>/<int:id>/<int:order_id>/',p_views.pay_vendor,name='pay-vendor'),
+    path('verify-payment/<slug:reference>/<slug:transaction_id>/<slug:username1>/<slug:username2>/<int:order_id>/',p_views.verify_payment,name='verify-payment'),
     path('user-transactions/<slug:username>/',p_views.UserTransactionsAPI.as_view(),name='user-transactions'),
     
     
