@@ -9,11 +9,16 @@ class UserSerializer(serializers.ModelSerializer):
         model=User
         fields=('id','username','email','is_active','first_name','last_name')
         
-class ProfileSerializer(GeoFeatureModelSerializer):
+'''class ProfileSerializer(GeoFeatureModelSerializer):
     class Meta:
         model=Profile
         geo_field = 'location'
-        fields=('id','image','is_vendor','debit','balance','premium','rating','negative_rating')
+        fields=('id','image','is_vendor','debit','balance','premium','rating','negative_rating') '''
+
+class ProfileSerializer(GeoFeatureModelSerializer):
+    class Meta:
+        model=Profile
+        fields=('id','image','is_vendor','debit','longitude','latitude','balance','premium','rating','negative_rating')
         
     def to_representation(self,instance):
         rep = super().to_representation(instance)

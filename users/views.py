@@ -19,6 +19,7 @@ from rest_framework import filters
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework_api_key.permissions import HasAPIKey
+from .calculate_distance import dis
 
 # Create your views here.
 class RegisterAPI(generics.GenericAPIView):
@@ -207,8 +208,14 @@ def GetNearVendors(request,username):
         user=User.objects.get(username=username)
         try: 
             profile=Profile.objects.get(user=user) 
-            print(profile.location)
-            near_vendors=Profile.objects.all().exclude(is_vendor=False).exclude(location=None).filter(location__distance_lte=(profile.location, D(km=5))) 
+            user_location=(profile.latitude,profile.longitude)
+            vendors=Profile.objects.all().exclude(is_vendor=False).exclude(latitude=None,longitude=None)
+            near_vendors=vendors
+            for vendor in vendors.iterator():
+                vendor_location=(vendor.latitude,vendor.longitude)
+                distance=dis(user_location,vendor_location)
+                if distance>5:
+                    near_vendors.exclude(user=vendor.user)
             serializer=ProfileSerializer(near_vendors,many=True) 
             return Response(serializer.data,status=status.HTTP_200_OK)
         except Profile.DoesNotExist:
@@ -223,9 +230,16 @@ def GetPremiumVendors(request,username):
         user=User.objects.get(username=username)
         try: 
             profile=Profile.objects.get(user=user)
+            user_location=(profile.latitude,profile.longitude)
             profiles=Profile.objects.filter(is_vendor=True,premium=True)
-            profiles.exclude(location=None).exclude(location="").filter(point__distance_lte=(profile.location, D(km=15)))
-            serializer=ProfileSerializer(profiles,many=True) 
+            profiles.exclude(location=None).exclude(latitude=None,longitude=None)
+            premium_profiles=profiles
+            for profile in profiles.iterator():
+                vendor_location=(profile.latitude,profile.longitude)
+                distance=dis(user_location,vendor_location)
+                if distance>15:
+                    premium_profiles.exclude(user=profile.user)
+            serializer=ProfileSerializer(premium_profiles,many=True) 
             return Response(serializer.data,status=status.HTTP_200_OK)
         except Profile.DoesNotExist:
            return Response({"message":"profile doesn't exist"},status=status.HTTP_404_NOT_FOUND)
