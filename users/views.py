@@ -12,8 +12,8 @@ from django.core.mail import send_mail
 from django.conf import settings
 from rest_framework.authtoken.models import Token
 from .models import Profile,Premium
-from django.contrib.gis.measure import D
-from django.contrib.gis.geos import *
+#from django.contrib.gis.measure import D
+#from django.contrib.gis.geos import *
 import json,requests
 from rest_framework import filters
 from drf_yasg import openapi

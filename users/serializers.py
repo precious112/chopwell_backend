@@ -2,7 +2,7 @@ from .models import Profile
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from django.contrib.auth import authenticate
-from rest_framework_gis.serializers import GeoFeatureModelSerializer
+#from rest_framework_gis.serializers import GeoFeatureModelSerializer
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -15,7 +15,7 @@ class UserSerializer(serializers.ModelSerializer):
         geo_field = 'location'
         fields=('id','image','is_vendor','debit','balance','premium','rating','negative_rating') '''
 
-class ProfileSerializer(GeoFeatureModelSerializer):
+class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model=Profile
         fields=('id','image','is_vendor','debit','longitude','latitude','balance','premium','rating','negative_rating')
