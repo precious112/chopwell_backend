@@ -31,14 +31,14 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = str(os.environ.get('DEBUG'))=="1"
 
-ALLOWED_HOSTS = ['127.0.0.1','localhost','chopwell.herokuapp.com']
+ALLOWED_HOSTS = ['*']
 
 '''GDAL_LIBRARY_PATH= 'C:\\OSGeo4W\\bin\\gdal304.dll'
 GEOS_LIBRARY_PATH= 'C:\\OSGeo4W\\bin\\geos_c.dll'
 GDAL_DATA='C:\\OSGeo4W\\share\\gdal'  '''
 
-GEOS_LIBRARY_PATH = os.environ.get('GEOS_LIBRARY_PATH')
-GDAL_LIBRARY_PATH = os.environ.get('GDAL_LIBRARY_PATH')
+#GEOS_LIBRARY_PATH = os.environ.get('GEOS_LIBRARY_PATH')
+#GDAL_LIBRARY_PATH = os.environ.get('GDAL_LIBRARY_PATH')
 
 
 
@@ -59,10 +59,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.gis',
     'rest_framework',
     'rest_framework.authtoken',
-    'rest_framework_gis',
     "rest_framework_api_key",
     'corsheaders',
     'users',
@@ -135,7 +133,7 @@ WSGI_APPLICATION = 'chopwell_backend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.environ.get('DATABASE_NAME'),
         'USER':os.environ.get('DATABASE_USER'),
         'PASSWORD':os.environ.get('DATABASE_PASSWORD'),
@@ -151,7 +149,7 @@ SWAGGER_SETTINGS = {
         'Basic': {
             'type': 'basic'
       },
-        'is_authenticated':True
+        'is_authenticated':True 
     },
 }
 
@@ -229,10 +227,10 @@ EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-django_heroku.settings(config=locals())
-db_from_env = dj_database_url.config(conn_max_age=500)
-DATABASES['default'].update(db_from_env)
-DATABASES['default']['ENGINE'] = 'django.contrib.gis.db.backends.postgis'
+#django_heroku.settings(config=locals())
+#db_from_env = dj_database_url.config(conn_max_age=500)
+#DATABASES['default'].update(db_from_env)
+#DATABASES['default']['ENGINE'] = 'django.contrib.gis.db.backends.postgis'
 
 
 EMAIL_PORT =465
