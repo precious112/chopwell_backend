@@ -19,11 +19,11 @@ from rest_framework import filters
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework_api_key.permissions import HasAPIKey
-from .calculate_distance import dis
+from .calculate_distance import dis,convert_to_float
 
 # Create your views here.
 class RegisterAPI(generics.GenericAPIView):
-    permission_classes = [HasAPIKey]
+    permission_classes = [AllowAny]
     serializer_class = RegisterSerializer
     
     def post(self,request, *args, **kwargs):
@@ -61,7 +61,7 @@ class RegisterAPI(generics.GenericAPIView):
      tags=['Users']
     )    
 @api_view(['POST'])
-@permission_classes([HasAPIKey])
+@permission_classes([AllowAny])
 def Verify(request):
     serializer=VerifySerializer(data=request.data) 
     serializer.is_valid(raise_exception=True)
@@ -86,7 +86,7 @@ def Verify(request):
                         ,status=status.HTTP_400_BAD_REQUEST)
     
 class LoginAPI(generics.GenericAPIView):
-    permission_classes = [HasAPIKey]
+    permission_classes = [AllowAny]
     serializer_class =LoginSerializer
     
     def post(self,request):
@@ -105,7 +105,7 @@ class LoginAPI(generics.GenericAPIView):
                         status=status.HTTP_200_OK)
     
 @api_view(['POST'])
-@permission_classes([HasAPIKey])
+@permission_classes([AllowAny])
 def ForgetPassword(request,email):
     user=User.objects.filter(email=email).first()
     code_list=[] 
@@ -149,7 +149,8 @@ def ForgetPassword(request,email):
         tags=['Users'],
     )
 @api_view(['POST'])
-@permission_classes([HasAPIKey])
+#@permission_classes([HasAPIKey])
+@permission_classes([AllowAny])
 def createPassword(request):
     serializer=UpdatePasswordSerializer(data=request.data)
     serializer.is_valid()
@@ -207,16 +208,19 @@ def GetNearVendors(request,username):
     try:
         user=User.objects.get(username=username)
         try: 
-            profile=Profile.objects.get(user=user) 
-            user_location=(profile.latitude,profile.longitude)
+            profile=Profile.objects.get(user=user)
+            coords_1,coords_2=convert_to_float(profile.latitude),convert_to_float(profile.longitude)
+            user_location=(coords_1,coords_2)
             vendors=Profile.objects.all().exclude(is_vendor=False).exclude(latitude=None,longitude=None)
+            vendors=list(vendors)
             near_vendors=vendors
-            for vendor in vendors.iterator():
-                vendor_location=(vendor.latitude,vendor.longitude)
+            for vendor in vendors:
+                coord_1,coord_2=convert_to_float(vendor.latitude),convert_to_float(vendor.longitude)
+                vendor_location=(coord_1,coord_2)
                 distance=dis(user_location,vendor_location)
                 if distance>5:
-                    near_vendors.exclude(user=vendor.user)
-            serializer=ProfileSerializer(near_vendors,many=True) 
+                    near_vendors.remove(vendor)
+            serializer=ProfileSerializer(near_vendors,many=True)
             return Response(serializer.data,status=status.HTTP_200_OK)
         except Profile.DoesNotExist:
            return Response({"message":"profile doesn't exist"},status=status.HTTP_404_NOT_FOUND)
@@ -230,15 +234,18 @@ def GetPremiumVendors(request,username):
         user=User.objects.get(username=username)
         try: 
             profile=Profile.objects.get(user=user)
-            user_location=(profile.latitude,profile.longitude)
+            coords_1,coords_2=convert_to_float(profile.latitude),convert_to_float(profile.longitude)
+            user_location=(coords_1,coords_2)
             profiles=Profile.objects.filter(is_vendor=True,premium=True)
             profiles.exclude(location=None).exclude(latitude=None,longitude=None)
+            profiles=list(profiles)
             premium_profiles=profiles
-            for profile in profiles.iterator():
-                vendor_location=(profile.latitude,profile.longitude)
+            for profile in profiles:
+                coord_1,coord_2=convert_to_float(profile.latitude),convert_to_float(profile.longitude)
+                vendor_location=(coord_1,coord_2)
                 distance=dis(user_location,vendor_location)
                 if distance>15:
-                    premium_profiles.exclude(user=profile.user)
+                    premium_profiles.remove(profile)
             serializer=ProfileSerializer(premium_profiles,many=True) 
             return Response(serializer.data,status=status.HTTP_200_OK)
         except Profile.DoesNotExist:
