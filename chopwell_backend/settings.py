@@ -99,7 +99,7 @@ chopwell_api_key=os.environ.get('chopwell_api_key')
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    #"whitenoise.middleware.WhiteNoiseMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
