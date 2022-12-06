@@ -20,6 +20,13 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework_api_key.permissions import HasAPIKey
 from .calculate_distance import dis,convert_to_float
+from drf_yasg.generators import OpenAPISchemaGenerator
+
+class BothHttpAndHttpsSchemaGenerator(OpenAPISchemaGenerator):
+    def get_schema(self, request=None, public=False):
+        schema = super().get_schema(request, public)
+        schema.schemes = ["http", "https"]
+        return schema
 
 # Create your views here.
 class RegisterAPI(generics.GenericAPIView):
