@@ -10,7 +10,7 @@ schema_view = get_schema_view(
       title="Chopwell API",
       default_version='v1',
       description="API description",
-      url='https://chopwell.up.railway.app',
+      url='https://chopwell.up.railway.app/',
       terms_of_service="https://www.google.com/policies/terms/",
       contact=openapi.Contact(email="preciouskent8@gmail.com"),
       license=openapi.License(name="BSD License"),

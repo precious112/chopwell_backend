@@ -128,6 +128,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'chopwell_backend.wsgi.application'
 
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
