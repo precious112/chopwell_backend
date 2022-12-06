@@ -52,14 +52,15 @@ class RegisterAPI(generics.GenericAPIView):
             
         except OTP.DoesNotExist:
             new_otp=OTP.objects.create(user=user, code=code)
+        mail_subject="Chopwell User Verification"
         message='your chopwell verification code is ' +code
         print(user.email)
-        send_mail('Verify your account', 
-                  message, settings.EMAIL_HOST_USER,
-                  [user.email])
+        send_mail( 
+                  mail_subject, message,f'Chopwell <{settings.EMAIL_HOST_USER}>', [user.email]
+                  )
         return Response({
             "user": UserSerializer(user, context=self.get_serializer_context()).data,
-            "message":"you have successfully registered you will receive an otp in your email shortly!",
+            "message":"you have successfully registered you will receive an otp in your email shortly,please check your spam incase it doesn't show up in inbox",
             #"code":code
             },status=status.HTTP_201_CREATED)
 @swagger_auto_schema(
@@ -216,6 +217,8 @@ def GetNearVendors(request,username):
         user=User.objects.get(username=username)
         try: 
             profile=Profile.objects.get(user=user)
+            if len(profile.latitude)==0 or len(profile.longitude)==0:
+                return Response({"message":"make sure you update longitude and latitude fields in your profile,you can get your location coorddinates with google maps or any maps api"},status=status.HTTP_400_BAD_REQUEST)
             coords_1,coords_2=convert_to_float(profile.latitude),convert_to_float(profile.longitude)
             user_location=(coords_1,coords_2)
             vendors=Profile.objects.all().exclude(is_vendor=False).exclude(latitude=None,longitude=None)
@@ -241,6 +244,8 @@ def GetPremiumVendors(request,username):
         user=User.objects.get(username=username)
         try: 
             profile=Profile.objects.get(user=user)
+            if len(profile.latitude)==0 or len(profile.longitude)==0:
+                return Response({"message":"make sure you update longitude and latitude fields in your profile,you can get your location coorddinates with google maps or any maps api"},status=status.HTTP_400_BAD_REQUEST)
             coords_1,coords_2=convert_to_float(profile.latitude),convert_to_float(profile.longitude)
             user_location=(coords_1,coords_2)
             profiles=Profile.objects.filter(is_vendor=True,premium=True)
