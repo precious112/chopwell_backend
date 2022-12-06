@@ -59,8 +59,8 @@ class RegisterAPI(generics.GenericAPIView):
                   [user.email])
         return Response({
             "user": UserSerializer(user, context=self.get_serializer_context()).data,
-            "message":"you have successfully registered!",
-            "code":code
+            "message":"you have successfully registered you will receive an otp in your email shortly!",
+            #"code":code
             },status=status.HTTP_201_CREATED)
 @swagger_auto_schema(
     method='post',
@@ -82,7 +82,7 @@ def Verify(request):
                 token=Token.objects.filter(user=user).first()
             else:
                 token=Token.objects.create(user=user) 
-            return Response({"message":"verification successfull",
+            return Response({"message":"verification successfull,you can proceed to login",
                          "token":token.key
                          }
                         ,status=status.HTTP_200_OK)
@@ -106,7 +106,7 @@ class LoginAPI(generics.GenericAPIView):
            token=Token.objects.get(user=user) 
         except Token.DoesNotExist:
             token=Token.objects.create(user=user)
-        return Response({"message":"you've successfully logged in",
+        return Response({"message":"you've successfully logged in,you can use token for authentication",
                          "token":token.key
                          },
                         status=status.HTTP_200_OK)
@@ -184,7 +184,7 @@ def get_profile(request,username):
           serializer=ProfileSerializer(profile) 
           return Response(serializer.data,status=status.HTTP_200_OK)
        except Profile.DoesNotExist:
-           return Response({"not found":"profile doesn't exist"},status=status.HTTP_404_NOT_FOUND)
+           return Response({"not found":"profile doesn't exist,please create a profile"},status=status.HTTP_404_NOT_FOUND)
        
     except User.DoesNotExist:
         return Response({"message":"user doesn't exist"},status=status.HTTP_404_NOT_FOUND)
@@ -230,7 +230,7 @@ def GetNearVendors(request,username):
             serializer=ProfileSerializer(near_vendors,many=True)
             return Response(serializer.data,status=status.HTTP_200_OK)
         except Profile.DoesNotExist:
-           return Response({"message":"profile doesn't exist"},status=status.HTTP_404_NOT_FOUND)
+           return Response({"message":"profile doesn't exist,please create a profile first"},status=status.HTTP_404_NOT_FOUND)
     
     except User.DoesNotExist:
         return Response({"message":"user doesn't exist"},status=status.HTTP_404_NOT_FOUND)
@@ -256,7 +256,7 @@ def GetPremiumVendors(request,username):
             serializer=ProfileSerializer(premium_profiles,many=True) 
             return Response(serializer.data,status=status.HTTP_200_OK)
         except Profile.DoesNotExist:
-           return Response({"message":"profile doesn't exist"},status=status.HTTP_404_NOT_FOUND)
+           return Response({"message":"profile doesn't exist,please create a profile first"},status=status.HTTP_404_NOT_FOUND)
     
     except User.DoesNotExist:
         return Response({"message":"user doesn't exist"},status=status.HTTP_404_NOT_FOUND)
@@ -327,7 +327,7 @@ def RateVendors(request,vendor,rate):
                 serializer=ProfileSerializer(vendor_profile)
                 return Response(serializer.data,status=status.HTTP_200_OK)
         except Profile.DoesNotExist:
-            return Response({"message":"profile doesn't exist"},status=status.HTTP_404_NOT_FOUND)
+            return Response({"message":"profile doesn't exist,please create a profile first"},status=status.HTTP_404_NOT_FOUND)
     except User.DoesNotExist:
         return Response({"message":"user doesn't exist"},status=status.HTTP_404_NOT_FOUND)
     
